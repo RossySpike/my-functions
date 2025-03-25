@@ -37,67 +37,45 @@ int list_insert(list_t *l, void *element, int index) {
   return 0;
 }
 
-int list_remove(list_t *l, int index) {
+void list_default_callback(void *element) {
+  free(element);
+  element = NULL;
+}
+
+int list_pop(list_t *l, void (*callback)(void *)) {
+  if (0 == l->len || !l->array) {
+    return -1;
+  }
+  l->len--;
+  if (callback)
+    callback(l->array[l->len]);
+  l->array[l->len] = NULL;
+  return 0;
+}
+
+void list_free(list_t *l, void (*callback)(void *)) {
+  for (size_t i = 0; i < l->len; i++) {
+    if (callback)
+      callback(l->array[i]);
+    l->array[i] = NULL;
+  }
+  free(l->array);
+  l->array = NULL;
+}
+
+int list_remove(list_t *l, int index, void (*callback)(void *)) {
   if (0 == l->len || !l->array || index < -1 || index >= l->len) {
     return -1;
   }
-
   void *element = l->array[index];
 
   for (int i = index; i < l->len - 1; i++) {
     l->array[i] = l->array[i + 1];
   }
 
-  free(element);
+  if (callback)
+    callback(element);
 
   l->len--;
   return 0;
-}
-int list_pop(list_t *l) {
-  if (0 == l->len || !l->array) {
-    return -1;
-  }
-  l->len--;
-  free(l->array[l->len]);
-  l->array[l->len] = NULL;
-  return 0;
-}
-
-void list_free(list_t *l) {
-  for (size_t i = 0; i < l->len; i++) {
-    free(l->array[i]);
-    l->array[i] = NULL;
-  }
-  free(l->array);
-  l->array = NULL;
-}
-
-int list_remove_stack(list_t *l, int index) {
-  if (0 == l->len || !l->array || index < -1 || index >= l->len) {
-    return -1;
-  }
-
-  for (int i = index; i < l->len - 1; i++) {
-    l->array[i] = l->array[i + 1];
-  }
-
-  l->len--;
-  return 0;
-}
-
-int list_pop_stack(list_t *l) {
-  if (0 == l->len || !l->array) {
-    return -1;
-  }
-  l->len--;
-  l->array[l->len] = NULL;
-  return 0;
-}
-
-void list_free_stack(list_t *l) {
-  for (size_t i = 0; i < l->len; i++) {
-    l->array[i] = NULL;
-  }
-  free(l->array);
-  l->array = NULL;
 }
